@@ -1,127 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Job Agency Portal | Applicant Dashboard</title>
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-  <!-- CSS Styles -->
-  <link rel="stylesheet" href="css/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Application Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/vue@3.3.4/dist/vue.global.js"></script>
 </head>
 <body>
-<div id="jobApp">
-  <div class="app-container">
-    <!-- Tab Navigation -->
-    <div class="tab-bar">
-      <button 
-        @click="currentTab = 'applicant'" 
-        :class="['tab-button', { active: currentTab === 'applicant' }]"
-      >
-        📝 Applicant Form
-      </button>
-      <button 
-        @click="currentTab = 'admin'" 
-        :class="['tab-button', { active: currentTab === 'admin' }]"
-      >
-        🖥️ Administrator Dashboard
-      </button>
-    </div>
-
-    <!-- Applicant Form Panel -->
-    <div v-if="currentTab === 'applicant'" class="panel" key="formPanel">
-      <h2>✍️ Submit your application</h2>
-      <div class="subnote">All fields are required — fill carefully</div>
-      
-      <!-- success flash message -->
-      <div v-if="showSuccessMsg" class="success-message">
-        <span>✅</span> Application submitted successfully! Form cleared for next applicant.
-      </div>
-
-      <form @submit.prevent="submitApplication">
-        <div class="form-grid">
-          <div class="input-group">
-            <label>Firstname <span class="required">*</span></label>
-            <input type="text" v-model="form.firstname" placeholder="e.g., Jane" required>
-          </div>
-          <div class="input-group">
-            <label>Surname <span class="required">*</span></label>
-            <input type="text" v-model="form.surname" placeholder="e.g., Doe" required>
-          </div>
-          <div class="input-group">
-            <label>Date of Birth <span class="required">*</span></label>
-            <input type="date" v-model="form.dob" required>
-          </div>
-          <div class="input-group full-width">
-            <label>Address <span class="required">*</span></label>
-            <textarea v-model="form.address" placeholder="Street, city, postal code ..." required></textarea>
-          </div>
-          <div class="input-group">
-            <label>Phone number <span class="required">*</span></label>
-            <input type="tel" v-model="form.phone" placeholder="+1 234 567 8900" required>
-          </div>
-          <div class="input-group">
-            <label>Gender <span class="required">*</span></label>
-            <div class="radio-group">
-              <label class="radio-option">
-                <input type="radio" value="Female" v-model="form.gender"> Female
-              </label>
-              <label class="radio-option">
-                <input type="radio" value="Male" v-model="form.gender"> Male
-              </label>
-              <label class="radio-option">
-                <input type="radio" value="Other" v-model="form.gender"> Other
-              </label>
+    <div id="app">
+        <div class="dashboard">
+            <div class="tab-header">
+                <button @click="currentTab = 'form'" :class="['tab-btn', { active: currentTab === 'form' }]">
+                    Applicant Form
+                </button>
+                <button @click="currentTab = 'admin'" :class="['tab-btn', { active: currentTab === 'admin' }]">
+                    Admin Dashboard
+                    <span v-if="applications.length" class="badge">{{ applications.length }}</span>
+                </button>
             </div>
-          </div>
-          <div class="input-group">
-            <label>National ID <span class="required">*</span></label>
-            <input type="text" v-model="form.nationalId" placeholder="Passport / ID number" required>
-          </div>
-        </div>
-        <div style="display: flex; justify-content: flex-start; margin-top: 0.5rem;">
-          <button type="submit" class="btn-primary">🚀 Submit Application</button>
-        </div>
-      </form>
-    </div>
+            <div v-if="currentTab === 'form'" class="tab-content">
+                <div v-if="showSuccess" class="success-msg">
+                    ✅ Application submitted successfully!
+                </div>
+                <form @submit.prevent="submitForm">
+                    <div class="form-row">
+                        <label>First Name <span class="required">*</span></label>
+                        <input type="text" v-model="form.firstName" required>
+                    </div>
+                    <div class="form-row">
+                        <label>Last Name <span class="required">*</span></label>
+                        <input type="text" v-model="form.lastName" required>
+                    </div>
+                    <div class="form-row">
+                        <label>Date of Birth <span class="required">*</span></label>
+                        <input type="date" v-model="form.dob" required>
+                    </div>
+                    <div class="form-row">
+                        <label>Address <span class="required">*</span></label>
+                        <textarea v-model="form.address" required></textarea>
+                    </div>
+                    <div class="form-row">
+                        <label>Phone <span class="required">*</span></label>
+                        <input type="tel" v-model="form.phone" required>
+                    </div>
+                    <div class="form-row">
+                        <label>Gender <span class="required">*</span></label>
+                        <div class="radio-group">
+                            <label><input type="radio" value="Male" v-model="form.gender"> Male</label>
+                            <label><input type="radio" value="Female" v-model="form.gender"> Female</label>
+                            <label><input type="radio" value="Other" v-model="form.gender"> Other</label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label>National ID <span class="required">*</span></label>
+                        <input type="text" v-model="form.nationalId" required>
+                    </div>
+                    <button type="submit" class="submit-btn">Submit Application</button>
+                </form>
+            </div>
 
-    <!-- Administrator Dashboard Panel -->
-    <div v-if="currentTab === 'admin'" class="panel" key="adminPanel">
-      <h2>📋 Applicants registry</h2>
-      <div class="subnote">Manage & review all submitted job applications</div>
-      
-      <div v-if="applications.length === 0" class="empty-state">
-        📭 No applicants yet — submitted forms will appear here.
-      </div>
-      
-      <div v-else class="table-wrapper">
-        <table class="applicants-table">
-          <thead>
-            <tr>
-              <th>#</th><th>Full Name</th><th>DOB</th><th>Address</th><th>Phone</th><th>Gender</th><th>National ID</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(applicant, idx) in applications" :key="idx">
-              <td>{{ idx + 1 }}</td>
-              <td><strong>{{ applicant.firstname }} {{ applicant.surname }}</strong></td>
-              <td>{{ formatDate(applicant.dob) }}</td>
-              <td class="address-preview">{{ applicant.address }}</td>
-              <td>{{ applicant.phone }}</td>
-              <td><span class="badge-gender">{{ applicant.gender }}</span></td>
-              <td>{{ applicant.nationalId }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+            <!-- Admin Dashboard -->
+            <div v-if="currentTab === 'admin'" class="tab-content">
+                <h2>All Applications</h2>
+                <div v-if="applications.length === 0" class="empty-state">
+                    No applications yet.
+                </div>
+                <div v-else class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>#</th><th>First</th><th>Last</th><th>DOB</th><th>Address</th><th>Phone</th><th>Gender</th><th>ID</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(app, idx) in applications" :key="idx">
+                                <td>{{ idx+1 }}</td>
+                                <td>{{ app.firstName }}</td>
+                                <td>{{ app.lastName }}</td>
+                                <td>{{ app.dob }}</td>
+                                <td>{{ app.address }}</td>
+                                <td>{{ app.phone }}</td>
+                                <td>{{ app.gender }}</td>
+                                <td>{{ app.nationalId }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
-    <footer>Job Agency Portal — secure applicant tracking</footer>
-  </div>
-</div>
-
-<!-- Vue JS -->
-<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
-<!-- App Logic -->
-<script src="js/app.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
